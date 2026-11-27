@@ -1,11 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const pool = require('../db');
+const { autenticar, requiereRol } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Listar usuarios (sin password)
-router.get('/', async (req, res, next) => {
+// Listar usuarios (sin password) - solo ADMIN
+router.get('/', autenticar, requiereRol('ADMIN'), async (req, res, next) => {
   try {
     const [rows] = await pool.query(
       'SELECT id, nombre, correo, rol, estado FROM usuarios'
@@ -14,8 +15,16 @@ router.get('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Un usuario solo puede ver/editar su propia cuenta; el ADMIN cualquiera
+function propioOAdmin(req, res, next) {
+  if (req.usuario.rol !== 'ADMIN' && String(req.usuario.id) !== req.params.id) {
+    return res.status(403).json({ mensaje: 'No tienes permisos para esta operación' });
+  }
+  next();
+}
+
 // Obtener un usuario
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', autenticar, propioOAdmin, async (req, res, next) => {
   try {
     const [rows] = await pool.query(
       'SELECT id, nombre, correo, rol, estado FROM usuarios WHERE id = ?',
@@ -51,7 +60,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // Actualizar nombre y correo
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', autenticar, propioOAdmin, async (req, res, next) => {
   try {
     const { nombre, correo } = req.body;
     if (!nombre || !correo) {
@@ -71,8 +80,8 @@ router.put('/:id', async (req, res, next) => {
   }
 });
 
-// "Eliminar" = desactivar (no se borra físicamente, RN17)
-router.delete('/:id', async (req, res, next) => {
+// "Eliminar" = desactivar (no se borra físicamente, RN17) - solo ADMIN
+router.delete('/:id', autenticar, requiereRol('ADMIN'), async (req, res, next) => {
   try {
     const [result] = await pool.query(
       "UPDATE usuarios SET estado = 'INACTIVO' WHERE id = ?",

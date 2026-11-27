@@ -19,8 +19,11 @@ app.get('/api/salud', async (req, res) => {
   }
 });
 
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/publicaciones', require('./routes/publicaciones'));
+app.use('/api/solicitudes', require('./routes/solicitudes'));
+app.use('/api/entregas', require('./routes/entregas'));
 
 // Ruta inexistente
 app.use((req, res) => {
@@ -29,6 +32,9 @@ app.use((req, res) => {
 
 // Manejo general de errores
 app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ mensaje: 'El cuerpo de la solicitud no es un JSON válido' });
+  }
   console.error(err);
   res.status(500).json({ mensaje: 'Error interno del servidor' });
 });
