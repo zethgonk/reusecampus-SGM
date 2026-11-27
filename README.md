@@ -87,7 +87,6 @@ Con la API en ejecución: `cd backend && npm test` (20 pruebas de integración c
 Pruebas manuales en el navegador: login con error, catálogo, mis publicaciones, y persistencia de datos tras recargar la página.
 
 ## Declaración de uso de inteligencia artificial
-> **Completar y ajustar con tus propios datos antes de entregar: debe ser verdadera y específica.**
 
 - **Herramienta:** Claude (Anthropic).
 - **Tareas con apoyo de IA:** completar el backend (autenticación JWT, middleware de roles, rutas de solicitudes y entregas con transacciones), pruebas de integración, la aplicación Angular (servicios, interceptor, guards, páginas) y este README.
